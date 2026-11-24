@@ -49,7 +49,5 @@ jobs:
     steps:
       - name: Deploy
         id: deployment
- git add .github/workflows/add.yml
-git commit -m "Fix GitHub Pages deployment"
-git push       uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v4
 
