@@ -27,8 +27,57 @@ const modules = import.meta.glob('./slides/*.html', {
 // NOTE: 按文件名排序并插入
 const slideFiles = Object.keys(modules).sort();
 
+// Vite 会根据 base 自动提供部署路径
+const BASE_URL = import.meta.env.BASE_URL;
+
+// 修正 public 资源路径
+function fixAssetPaths(html) {
+    const template = document.createElement('template');
+    template.innerHTML = html;
+
+    // 处理 HTML 资源属性
+    const selectors = [
+        'img[src]',
+        'video[src]',
+        'video[poster]',
+        'audio[src]',
+        'source[src]',
+    ];
+
+    template.content.querySelectorAll(selectors.join(',')).forEach(el => {
+        for (const attr of ['src', 'poster']) {
+            const value = el.getAttribute(attr);
+
+            if (value && value.startsWith('/') && !value.startsWith('//')) {
+                el.setAttribute(
+                    attr,
+                    BASE_URL + value.replace(/^\/+/, '')
+                );
+            }
+        }
+    });
+
+    // 处理 HTML 内联 style 中的 url()
+    template.content.querySelectorAll('[style]').forEach(el => {
+        const style = el.getAttribute('style');
+
+        const fixedStyle = style.replace(
+            /url\(\s*(['"]?)\/(?!\/)([^'")]+)\1\s*\)/g,
+            (_, quote, path) => `url(${quote}${BASE_URL}${path}${quote})`
+        );
+
+        el.setAttribute('style', fixedStyle);
+    });
+
+    return template.innerHTML;
+}
+
+// 插入幻灯片
 for (const file of slideFiles) {
-    slides.insertAdjacentHTML('beforeend', modules[file]);
+    slides.insertAdjacentHTML(
+        'beforeend',
+        fixAssetPaths(modules[file])
+    );
 }
 
 // 初始化 Reveal.js
