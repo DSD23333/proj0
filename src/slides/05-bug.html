@@ -1,0 +1,248 @@
+<section>
+
+    <section>
+        <h1> Bug </h1>
+    </section>
+
+    <section class="ppt-page">
+        <h2 class="element"> Battle? </h2>
+		
+		<div class="ppt-block"
+	         style="left:0; bottom:20%; width:500px; height:500px;">
+	        <video class="element ppt-video"
+	               src="/videos/pal-bug.mp4"
+				   loop
+	               muted
+	               playsinline
+	               style="
+						  top: 13%;
+						  left: 2%;
+	        		object-fit: contain;
+					box-shadow: 15px 20px 4px rgba(0, 0, 0, 0.3);
+	               ">
+	        </video>
+		</div>
+
+		<div class="ppt-block"
+	         style="right:0; bottom:20%; width:500px; height:500px;">
+	        <video class="element ppt-video"
+	               src="/videos/pal-dos.mp4"
+				   loop
+	               muted
+	               playsinline
+	               style="
+						  top: 13%;
+						  left: 2%;
+	        		object-fit: contain;
+					box-shadow: 15px 20px 4px rgba(0, 0, 0, 0.3);
+	               ">
+	        </video>
+		</div>
+
+		<div class="ppt-block fragment"
+			style="bottom: 20%; right: 20%; width: 15%; height: 10%;">
+			<h3 class="element"> "注意到" </h3>
+		</div>
+
+    </section>
+
+	<section class="ppt-page">
+		<h2 class="ppt-block">
+			Ctrl-C
+		</h2>
+		<div class="ppt-block"
+			 style="
+				left: 14%;
+				top: 8%;
+				width: 80%;
+				height: 85%;
+			 ">
+			<img class="element"
+				 src="/images/pal-gdb.png"
+				 style="
+					left: 0%;
+					top:  0%;
+					width: 100%;
+					height: 100%;
+				box-shadow: 15px 20px 4px rgba(0, 0, 0, 0.3);
+				 ">
+		</div>
+	</section>
+
+	<section class="ppt-page">
+		<h2 class="ppt-block">
+			fixedpt
+		</h2>
+		<div class="ppt-block"
+			 style="
+				left: 2%;
+				top: 10%;
+				width: 100%;
+				height: 50%;
+			 ">
+			<img class="element"
+				 src="/images/fixedpt.png"
+				 style="
+					left: 0%;
+					top:  0%;
+					width: 100%;
+					height: 100%;
+				box-shadow: 15px 20px 4px rgba(0, 0, 0, 0.3);
+				 ">
+		</div>
+
+		<div class="ppt-block fragment"
+			style="bottom: 0%; left: 0%; width: 100%; height: 35%;">
+			<h3> 偷懒失败 🤡</h3>
+		</div>
+	</section>
+
+	<section class="ppt-page">
+
+		<div class="ppt-block"
+			style="
+				left: 0%;
+				top:  0%;
+			">
+    		<h2> ... </h2>
+		</div>
+
+		<div class="ppt-block"
+			 style="
+					left: 0%;
+					top: 25%;
+					width: 100%;
+					height: 28%;
+			 ">
+			<pre class="element code"
+				 style="
+					left: 0%;
+					top: 0%;
+					width: 100%;
+					height: 100%;
+				 ">
+				 <code class="language-c" data-trim data-line-numbers>
+					// FIXME: the first mul src ret 0
+					    g_Battle.rgPlayer[i].flTimeMeter +=
+					    FLOATmuli(PAL_GetTimeChargingSpeed(wDexterity), g_Battle.rgPlayer[i].flTimeSpeedModifier);
+					
+					-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+					
+					dsd@DSDsPC:~/script$ python3 fix.py
+					只支持 8 bits的小数位宽精度 请输入定点数原始值（输入 q 退出）: 0x1234
+					原始值: 4660
+					浮点值: 18.203125
+					只支持 8 bits的小数位宽精度 请输入定点数原始值（输入 q 退出）: q
+				</code>
+			</pre>
+		</div>
+
+	</section>
+
+	<section class="ppt-page">
+
+		<div class="ppt-block"
+			 style="
+					left: 0%;
+					top: 5%;
+					width: 100%;
+					height: 90%;
+			 ">
+			<pre class="element code"
+				 style="
+					left: 0%;
+					top: 0%;
+					width: 100%;
+					height: 100%;
+				 ">
+				 <code class="language-c" data-trim data-line-numbers="1-2|14-15|17-27|29-40|64-70|78-79">
+					VOID
+					PAL_UpdateTimeChargingUnit(VOID)
+					{
+					    printf("dexterity = %d\n", PAL_GetPlayerDexterity(0));
+					
+					#ifdef __NAVY__
+					    printf("pow base = 0x%x\n", FLOATfromInt(PAL_GetPlayerDexterity(0) + 5));
+					    printf("pow exponent = 0x%x\n", FLOATconst(0.3f));
+					#else
+					    printf("pow base = %f\n", FLOATfromInt(PAL_GetPlayerDexterity(0) + 5));
+					    printf("pow exponent = %f\n", FLOATconst(0.3f));
+					#endif
+					
+					    g_Battle.flTimeChargingUnit =
+					        FLOATpow(FLOATfromInt(PAL_GetPlayerDexterity(0) + 5), FLOATconst(0.3f));
+					
+					#ifdef __NAVY__
+					    printf("after FLOATpow = 0x%x\n", g_Battle.flTimeChargingUnit);
+					
+					    printf("div numerator = 0x%x\n", g_Battle.flTimeChargingUnit); // 0x840 8.25
+					    printf("div denominator = 0x%x\n", FLOATfromInt(PAL_GetPlayerDexterity(0)));
+					#else
+					    printf("after FLOATpow = %f\n", g_Battle.flTimeChargingUnit); // 8.200333
+					
+					    printf("div numerator = %f\n", g_Battle.flTimeChargingUnit); // 8.200333
+					    printf("div denominator = %d\n", PAL_GetPlayerDexterity(0)); // 1107
+					#endif
+					
+						//FIXME: 8.25 / 11007
+					    g_Battle.flTimeChargingUnit =
+					        FLOATdivi(g_Battle.flTimeChargingUnit, PAL_GetPlayerDexterity(0));
+						//FIXME:
+					
+					#ifdef __NAVY__
+						// 0x1 which is  0.00390625
+					    printf("after FLOATdivi = 0x%x\n", g_Battle.flTimeChargingUnit);
+					#else
+						// 0.007408
+					    printf("after FLOATdivi = %f\n", g_Battle.flTimeChargingUnit);
+					#endif
+					
+					    if (gpGlobals->bBattleSpeed > 1)
+					    {
+					#ifdef __NAVY__
+					        printf("FLOATmuli multiplier = %d\n", 2);
+					        printf("FLOATdivi divisor = %d\n", 1 + gpGlobals->bBattleSpeed);
+					#else
+					        printf("FLOATmuli multiplier = %d\n", 2);
+					        printf("FLOATdivi divisor = %d\n", 1 + gpGlobals->bBattleSpeed);
+					#endif
+					
+							// *2
+					        g_Battle.flTimeChargingUnit = FLOATmuli(g_Battle.flTimeChargingUnit, 2);
+					#ifdef __NAVY__
+						// 0x2 = 0.0078125
+					    printf("after *2 = 0x%x\n", g_Battle.flTimeChargingUnit);
+					#else
+						// 0.014816
+					    printf("after *2 = %f\n", g_Battle.flTimeChargingUnit);
+					#endif
+					
+							// /3
+					        g_Battle.flTimeChargingUnit = FLOATdivi(g_Battle.flTimeChargingUnit, 1 + gpGlobals->bBattleSpeed);
+					#ifdef __NAVY__
+						//	0x0 = 0
+					    printf("after /3 = 0x%x\n", g_Battle.flTimeChargingUnit);
+					#else
+						// 0.004938
+					    printf("after /3 = %f\n", g_Battle.flTimeChargingUnit);
+					#endif
+					...
+
+
+
+
+
+					#ifndef FIXEDPT_WBITS
+					// #define FIXEDPT_WBITS	 24 ( 32 - 24 = 8  )
+					#define FIXEDPT_WBITS 16 ( 32 - 16 = 16 )
+					#endif
+					
+					#if FIXEDPT_WBITS >= FIXEDPT_BITS
+					#error "FIXEDPT_WBITS must be less than or equal to FIXEDPT_BITS"
+					#endif
+				</code>
+			</pre>
+		</div>
+
+	</section>
+</section>

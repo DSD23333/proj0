@@ -1,0 +1,86 @@
+import Reveal from 'reveal.js';
+
+import 'reveal.js/reveal.css';
+import 'reveal.js/theme/white.css';
+
+import 'reveal.js/plugin/highlight/monokai.css';
+import RevealHighlight from 'reveal.js/plugin/highlight';
+
+// 加载基础样式
+import './styles/base.css';
+
+// 自动加载所有章节样式
+import.meta.glob('./styles/slides/*.css', {
+    eager: true,
+});
+
+// 获取幻灯片容器
+const slides = document.querySelector('#slides');
+
+// 自动加载 slides 目录下的 HTML 文件
+const modules = import.meta.glob('./slides/*.html', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+});
+
+// NOTE: 按文件名排序并插入
+const slideFiles = Object.keys(modules).sort();
+
+for (const file of slideFiles) {
+    slides.insertAdjacentHTML('beforeend', modules[file]);
+}
+
+// 初始化 Reveal.js
+const deck = new Reveal({
+    width: 1280,
+    height: 720,
+    hash: true,
+    slideNumber: true,
+    controls: true,
+    progress: true,
+    center: true,
+    transition: 'fade',
+    transitionSpeed: 'slow',
+
+    plugins: [RevealHighlight],
+});
+
+// 视频控制
+function handleVideoPage(slide) {
+    if (!slide) return;
+
+    document.querySelectorAll('.ppt-video').forEach(video => {
+        if (slide.contains(video)) {
+            video.playbackRate = Number(video.dataset.speed) || 1;
+
+            // 从头播放
+            if (video.readyState >= 1) {
+                video.currentTime = 0;
+            } else {
+                video.addEventListener('loadedmetadata', () => {
+                    video.currentTime = 0;
+                }, { once: true });
+            }
+
+            video.play().catch(error => {
+                console.error('Video play failed:', error);
+            });
+
+        } else {
+            video.pause();
+        }
+    });
+}
+
+// 注意：先注册事件，再初始化
+deck.on('ready', event => {
+    handleVideoPage(event.currentSlide);
+});
+
+deck.on('slidechanged', event => {
+    handleVideoPage(event.currentSlide);
+});
+
+
+deck.initialize();
